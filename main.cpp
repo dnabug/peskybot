@@ -14,6 +14,7 @@ int main()
     while (!word.empty() && word_count < max_words) {
         std::cout << word << ' ';
         word = dict.GetRandomNextWord(word);
+        word_count++;
     }
 
     std::cout << "\n";
