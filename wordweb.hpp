@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 struct WordConnections
 {
@@ -23,6 +24,6 @@ public:
 
 private:
     std::map<std::string, WordConnections> words;
-    unsigned int total_preceded = 0;
-    unsigned int highest_preceded = 0;
+    std::vector<std::string> start_words;
+    unsigned int total_connections = 0;
 };

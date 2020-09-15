@@ -8,6 +8,8 @@
 WordWeb::WordWeb(std::string filename)
 {
     std::ifstream file(filename, std::ios::binary);
+    std::srand(std::time(nullptr)); // Might swap this out for a more sophisticated
+                                    // random number generator
 
     if (!file.is_open()) {
         std::cerr << "Failed to open file\n";
@@ -41,14 +43,12 @@ WordWeb::WordWeb(std::string filename)
                            [](unsigned char c) { return std::tolower(c); });
 
             words.push_back(word);
-
             start_pos = end_pos + 1;
         }
 
         for (int i = 0; i < words.size(); i++) {
             std::string prev = (i == 0 ? std::string() : words[i-1]);
             std::string after = (i == words.size() - 1 ? std::string() : words[i + 1]);
-
 
             AddWordInstance(words[i], prev, after);
         }
@@ -71,10 +71,8 @@ void WordWeb::AddWordInstance(std::string word, std::string prev, std::string af
 
     if (!prev.empty()) {
         words[word].preceded_count++;
-        total_preceded++;
-        if (words[word].preceded_count > highest_preceded) {
-            highest_preceded = words[word].preceded_count;
-        }
+    } else {
+        start_words.push_back(word);
     }
 
     if (!after.empty()) {
@@ -83,36 +81,22 @@ void WordWeb::AddWordInstance(std::string word, std::string prev, std::string af
 
         unsigned int count = words[word].connections[after];
         words[word].connections[after] = count + 1;
-    }
-}
 
+        total_connections++;
+    }
+
+}
 
 std::string WordWeb::GetRandomStartWord()
 {
-    std::srand(std::time(nullptr)); // Might swap this out for a more sophisticated
-                                    // random number generator
-    if (words.size() < 1) return std::string();
+    if (start_words.size() < 1) return std::string();
 
-    unsigned int start_range = 0, end_range;
-    unsigned int value = std::rand() % total_preceded; // May be biased, but don't care
-
-    for (auto word_pair : words) {
-        std::string word = std::get<0>(word_pair);
-        end_range = start_range + highest_preceded - words[word].preceded_count + 1;
-
-        if (value >= start_range && value <= end_range) {
-            return word;
-        }
-
-        start_range = end_range + 1;
-    }
-
-    return std::string();
+    unsigned int value = std::rand() % start_words.size();
+    return start_words[value];
 }
 
 std::string WordWeb::GetRandomNextWord(std::string word)
 {
-    // See GetRandomStartWord
     if (!words.count(word)) return std::string();
     if (words[word].succeeded_count < 1) return std::string();
 
