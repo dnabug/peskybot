@@ -2,10 +2,13 @@
 
 #include "wordweb.hpp"
 
-int generate_line(WordWeb dict, int max_words, std::vector<std::string> req_words)
+int generate_line(WordWeb dict, int max_words, std::vector<std::string> req_words,
+                  std::string name)
 {
     std::string word = dict.GetRandomStartWord();
     std::vector<std::string> words;
+
+    words.push_back(word);
 
     while (!word.empty() && words.size() < max_words) {
         word = dict.GetRandomNextWord(word);
@@ -24,7 +27,7 @@ int generate_line(WordWeb dict, int max_words, std::vector<std::string> req_word
 
     if (req_words.size() > 0) return 1;
 
-    std::cout << "pesky says: ";
+    std::cout << name << " says: ";
     for (std::string w : words) {
         std::cout << w << ' ';
     }
@@ -35,11 +38,12 @@ int generate_line(WordWeb dict, int max_words, std::vector<std::string> req_word
 
 int main(int argc, char** argv)
 {
-    WordWeb dict("pesky.txt");
-
     std::vector<std::string> required_words;
     int max_words = 50;
     int lines = 1;
+
+    std::string filename = "pesky.txt";
+    std::string name = "pesky";
 
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
@@ -53,11 +57,21 @@ int main(int argc, char** argv)
                     return 1;
                 }
                 i++;
-            } else required_words.push_back(arg);
+            } else if (arg == "-i" && i < argc - 1) {
+                filename = argv[i + 1];
+                i++;
+            } else if (arg == "-name" && i < argc - 1) {
+                name = argv[i + 1];
+                i++;
+            } else {
+                required_words.push_back(arg);
+            }
         }
     }
 
+    WordWeb dict(filename);
+
     for (int i = 0; i < lines; i++) {
-        while (generate_line(dict, max_words, required_words));
+        while (generate_line(dict, max_words, required_words, name));
     }
 }
